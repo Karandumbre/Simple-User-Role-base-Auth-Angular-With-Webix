@@ -1,1 +1,35 @@
 /* You can add global styles to this file, and also import other style files */
+.login,
+.userprofile,
+.admin {
+  width: 70%;
+  margin: auto;
+  margin-top: 20%;
+  background-color: rgba($color: #ffffff, $alpha: 0.8);
+  padding: 20px;
+  border-radius: 5px;
+}
+
+@media (min-width:780px) {
+
+  .login,
+  .userprofile,
+  .admin {
+    margin-top: 10%;
+    width: 50%;
+    padding: 30px;
+  }
+}
+
+.validation-message {
+  color: red;
+  font-size: 12px;
+  margin-left: 12px;
+}
+
+
+body {
+  background-image: url('./assets/truck.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+}

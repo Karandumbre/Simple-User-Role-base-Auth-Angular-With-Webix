@@ -1,0 +1,13 @@
+<section>
+
+    <div>
+        <app-admin [UserData]='UserData' *ngIf="showAdminPanel === true"></app-admin>
+    </div>
+
+    <div>
+        <app-userprofile [UserData]='UserData' *ngIf="showAdminPanel === false"></app-userprofile>
+    </div>
+
+    <router-outlet></router-outlet>
+
+</section>
