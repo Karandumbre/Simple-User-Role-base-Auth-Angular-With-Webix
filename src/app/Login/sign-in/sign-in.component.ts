@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators, FormBuilder } from '@angular/forms';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService } from '../../Services/user.service';
 import { AppComponent } from '../../app.component';
 import { StorageService } from '../../Services/storage.service';
+declare var webix: any;
+declare var $$: any;
 
 @Component({
   selector: 'app-sign-in',
@@ -12,58 +14,70 @@ import { StorageService } from '../../Services/storage.service';
   providers: [AppComponent]
 })
 export class SignInComponent implements OnInit {
-  protected email: FormControl;
-  protected password: FormControl;
-  public loginForm: FormGroup;
-  public formSumitAttempt: boolean;
-  public serverErrorMessages: any;
-
-  constructor(private userService: UserService, private router: Router, private fb: FormBuilder, private storage: StorageService) { }
+  @ViewChild('loginContainer', { static: false }) loginContainer: ElementRef;
+  constructor(private userService: UserService, private router: Router, private storage: StorageService) { }
 
   ngOnInit() {
-    this.createFormControl();
-    this.createControls();
-  }
-  createFormControl() {
-    this.email = new FormControl('', [Validators.required, Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}')]);
-    this.password = new FormControl('', Validators.required);
+    this.loginWebixForm();
   }
 
-  createControls() {
-    this.loginForm = this.fb.group({
-      email: this.email,
-      password: this.password
-    });
+  private loginWebixForm() {
+    return webix.ui({
+      rows: [
+        {
+          id: 'InitialloginForm',
+          view: 'form',
+          css: 'login',
+          autoheight: true,
+          borderless: true,
+          elements: [
+            {
+              margin: 20,
+              paddingY: 25,
+              paddingX: 25,
+              rows: [
+                {
+                  view: 'text', name: 'email', placeholder: 'Email Id',
+                  label: 'Email', width: 300, labelWidth: 100
+                },
+                {
+                  view: 'text', name: 'password', placeholder: 'Password',
+                  label: 'Password', type: 'password', width: 300, labelWidth: 100
+                },
+                { view: 'button', css: 'login-button', label: 'Login', width: 300, click: () => this.formSave() }
+              ]
+
+            }
+          ],
+          rules: {
+            email: webix.rules.isNotEmpty,
+            password: webix.rules.isNotEmpty,
+          },
+          elementsConfig: {}
+        }
+      ]
+    }).show();
   }
 
-  isFieldValid(field: string) {
-    return (
-      (!this.loginForm.get(field).valid && this.formSumitAttempt));
-  }
 
-  /**
-   * Displays field css
-   * @param field returns the field which has an error
-   *
-   */
-  displayFieldCss(field: string) {
-    return {
-      'has-error': this.isFieldValid(field),
-      'has-feedback': this.isFieldValid(field)
-    };
-  }
 
-  onSubmit() {
-    this.userService.login(this.loginForm.value).subscribe(
+  formSave() {
+    const formData = $$('InitialloginForm').getValues();
+    const myform = $$('InitialloginForm');
+    myform.validate({ hidden: true });
+    this.userService.login(formData).subscribe(
       res => {
-        this.storage.SetCookie('TR_001', btoa(this.email.value));
+        this.storage.SetCookie('TR_001', btoa(formData.email));
         this.storage.SetCookie('token', res.token);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/dashboard']).then(() => {
+          window.location.reload();
+        });
       },
       err => {
-        this.serverErrorMessages = err.error.message;
+        webix.message(err.error.message);
       }
     );
   }
 
 }
+

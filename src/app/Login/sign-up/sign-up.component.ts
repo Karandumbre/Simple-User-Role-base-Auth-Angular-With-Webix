@@ -10,17 +10,9 @@ import { StorageService } from '../../Services/storage.service';
   styleUrls: ['./sign-up.component.scss']
 })
 export class SignUpComponent implements OnInit {
-  @Input() CurrentUserData: {
-    email: '',
-    fullName: '',
-    phone: '',
-    role: ['']
-  };
-  @Output() messageToEmit = new EventEmitter<string>();
-  @ViewChild('CloseModal', { static: false }) CloseModal: ElementRef;
-  @Input() toUpdate = 'false';
   public showSucessMessage: boolean;
   public serverErrorMessages: string;
+  @ViewChild('CloseModal', { static: false }) CloseModal: ElementRef;
   public SignUpForm: FormGroup;
   public email: FormControl;
   public name: FormControl;
@@ -33,11 +25,11 @@ export class SignUpComponent implements OnInit {
     this.createForm();
   }
 
-  createFormControls(data = this.CurrentUserData) {
-    this.email = new FormControl(data.email, [Validators.required, Validators.pattern('[A-Za-z0-9]{3,}(?!.*([._%+-])\\1)([a-zA-Z0-9._%+-]*[a-zA-Z0-9])@[a-zA-Z]{3,}([.]{1}[a-zA-Z]{2,}|[.]{1}[a-zA-Z]{2,}[.]{1}[a-zA-Z]{2,})')]);
-    this.phone = new FormControl(data.phone, [Validators.required, Validators.pattern('[6-9]{1}[0-9]{9}')]);
-    this.name = new FormControl(data.fullName, [Validators.required, Validators.pattern('[a-zA-z ]+')]);
-    this.role = new FormControl(data.role[0], [Validators.required, Validators.pattern('[a-zA-Z]+'), Validators.maxLength(6)]);
+  createFormControls() {
+    this.email = new FormControl('', [Validators.required, Validators.pattern('[A-Za-z0-9]{3,}(?!.*([._%+-])\\1)([a-zA-Z0-9._%+-]*[a-zA-Z0-9])@[a-zA-Z]{3,}([.]{1}[a-zA-Z]{2,}|[.]{1}[a-zA-Z]{2,}[.]{1}[a-zA-Z]{2,})')]);
+    this.phone = new FormControl('', [Validators.required, Validators.pattern('[6-9]{1}[0-9]{9}')]);
+    this.name = new FormControl('', [Validators.required, Validators.pattern('[a-zA-z ]+')]);
+    this.role = new FormControl('Normal', [Validators.required, Validators.pattern('[a-zA-Z]+'), Validators.maxLength(6)]);
   }
 
   createForm() {
@@ -51,47 +43,17 @@ export class SignUpComponent implements OnInit {
 
   onSubmit() {
     if (this.SignUpForm.valid) {
-      if (this.toUpdate === 'true') {
-        this.updateUserDetails();
-      } else {
-        this.createUser();
-      }
+      this.userService.postUser(this.SignUpForm.value).subscribe((res) => {
+        if (res.status === true) {
+          alert('User Created successfully');
+          this.resetForm();
+          this.CloseModal.nativeElement.click();
+        }
+      }, err => {
+        this.errorHandler(err);
+      });
     }
   }
-
-  updateUserDetails() {
-    const data = {
-      ...this.CurrentUserData,
-      updatedEmail: this.email.value,
-      name: this.name.value,
-      phone: this.phone.value,
-      role: this.role.value
-    };
-
-    this.userService.saveOrUpdateUserDetails(data).subscribe((res) => {
-      if (res.status === true) {
-        alert('User Updated successfully');
-        this.resetForm();
-        this.CloseModal.nativeElement.click();
-      }
-    }, err => {
-      this.errorHandler(err);
-    });
-  }
-
-
-  createUser() {
-    this.userService.postUser(this.SignUpForm.value).subscribe((res) => {
-      if (res.status === true) {
-        alert('User Created successfully');
-        this.resetForm();
-        this.CloseModal.nativeElement.click();
-      }
-    }, err => {
-      this.errorHandler(err);
-    });
-  }
-
 
   errorHandler(err) {
     if (err.status === 422) {
@@ -108,9 +70,4 @@ export class SignUpComponent implements OnInit {
     this.SignUpForm.markAsUntouched();
     this.serverErrorMessages = '';
   }
-
-  CloseUserModal() {
-    this.messageToEmit.emit('close');
-  }
-
 }

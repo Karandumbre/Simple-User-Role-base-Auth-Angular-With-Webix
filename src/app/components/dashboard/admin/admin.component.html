@@ -1,41 +1,5 @@
-<div class="admin">
-    <table class="table table-hover table-striped" *ngIf="showTableDashboard">
-        <thead>
-            <tr>
-                <th *ngFor="let key of keys" class="text-capitalize">
-                    {{key}}
-                </th>
-                <th>
-                    Remove
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <ng-container *ngFor="let item of UserData.users;let i = index">
-                <tr class="table-data" data-toggle="modal" data-target="#usermodal" (click)='editUserData(i)'>
-                    <td>{{item.role}}</td>
-                    <td>{{item.fullName}}</td>
-                    <td>{{item.email}}</td>
-                    <td>{{item.phone}}</td>
-                    <td (click)='$event.stopPropagation();deleteUser(i)'>
-                        <button class="btn btn-danger btn-group-sm">Delete</button>
-                    </td>
-                </tr>
-            </ng-container>
-        </tbody>
-    </table>
-
-    <div class="w-100 text-right">
-        <button class="btn btn-warning  text-white" data-toggle="modal" data-target="#usermodal"
-            (click)='editUserData(null)'>Create
-            User</button>
-    </div>
-
-</div>
-
 <div class="modal fade" id="usermodal">
-    <app-sign-up [CurrentUserData]='user' [toUpdate]='ChildConfig.toUpdate' *ngIf="showUserModal"
-        (messageToEmit)="closeModal()">
-        {{ChildConfig.message}}
+    <app-sign-up>
+        Create User
     </app-sign-up>
 </div>
